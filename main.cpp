@@ -23,21 +23,6 @@
 #include <list>
 using namespace std;
 
-// GLOBAL VARIABLE
-// vector<vector<int>> MATRIZ_DISTANCIAS;
-
-// Para agregar CBJ:
-// lista de listas?, en que cada indice representa el avión i, y dentro de la lista
-// estan las variables con las que ha tenido conflicto, entonces cuando
-// se haga return (pero no el cuando ya hay una solucion), la funcion ALSP
-// pregunta: ¿Es este el indice al q me dijeron que vuelva?
-// y revisa y solo permite continuar cuando el indice corresponda
-// RECORDAR que cuando encuentra una solucion, entonces en ese retorno
-// no hay mas salto inteligente hasta que se vuelve a instanciar la primera
-// variable.
-// RECORDAR QUE EL SALTO ES SOLO CUANDO SE TERMINA EL DOMINIO DE UNA VARIABLE.
-
-
 // Clases
 class Avion {
     public:
@@ -49,29 +34,13 @@ class Avion {
         int indice;
         list<int> dominio;
         vector<int> conjuntoconflicto;
-        // Avion();
 };
-
-// Constructor de Avion
-// Avion::Avion(int Ev, int Tv, int Lv, float gv, float hv, int indicev) {
-//     E = Ev;
-//     T = Tv;
-//     L = Lv;
-//     g = gv;
-//     h = hv;
-//     indice = indicev;
-//     for(int i = Ev; i <= Lv; i++) {
-//         dominio.push_back(i);
-//     }
-// }
-
 
 std::vector<Avion> deepCopydeAviones(vector<Avion> Aviones, int P) {
     vector<Avion> Aviones_copia(P, Avion());
     vector<Avion>::iterator it;
     int contador_aviones = 0;
     for(it = Aviones.begin(); it != Aviones.end(); ++it) {
-        // QUIZAS ACA TENIA QUE HACER it->E;
         Aviones_copia[contador_aviones].E = Aviones[contador_aviones].E;
         Aviones_copia[contador_aviones].T = Aviones[contador_aviones].T;
         Aviones_copia[contador_aviones].L = Aviones[contador_aviones].L;
@@ -94,7 +63,6 @@ std::vector<Avion> deepCopydeAviones(vector<Avion> Aviones, int P) {
 vector<int> agregarindiceaconflictos(vector<int> conjuntoconflicto, int Indice, int P) {
     for(int i = 0; i < P; i++) {
         if(conjuntoconflicto[i] == -1) { // Si ya llego al final
-            //cout << "llegue acaaaaaa" << endl;
             conjuntoconflicto[i] = Indice;
             return conjuntoconflicto;
         }
@@ -124,6 +92,7 @@ vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Av
             avion_no_instanciado->dominio = copia_dominio;
         }
     }
+    // Para printear en caso de debugear
     // for(avion_no_instanciado = Aviones_copia.begin(); avion_no_instanciado != Aviones_copia.end(); ++avion_no_instanciado) {
     //     // list<int>::iterator x_j;
     //     vector<int>::iterator x_j;
@@ -158,6 +127,7 @@ vector<int> HayAlgunDominioVacio(vector<Avion> Aviones_nueva_copia) {
         if(avion->dominio.empty()) { // Si esta vacio, retornar [1, escogerIndiceSaltoInteligente]
             Respuesta.push_back(1);
             Respuesta.push_back(escogerIndiceSaltoInteligente(avion->conjuntoconflicto));
+            return Respuesta;
         }
     }
     Respuesta.push_back(0);
@@ -165,10 +135,13 @@ vector<int> HayAlgunDominioVacio(vector<Avion> Aviones_nueva_copia) {
 }
 
 int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, int Valor, int* Solucion, int P) {
+    // Retorna: estado
+    // Si estado == -2, significa que se encontró una solución y la rama está libre de saltos inteligentes (CBJ)
+    // En caso que no esté libre de saltos inteligentes, estado tomará el valor del índice del avión
+    // al cual se debe saltar, basándose en el conjunto de conflicto de la variable con dominio vacío
     Solucion[Indice] = Valor;
     if(Indice >= P -1) {
-        // Print
-        cout << "Encontre solucion" << endl;
+        // Print solucion
         for(int i = 0; i < P; i++) {
             cout << Solucion[i] << ",";
         }
@@ -182,7 +155,6 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
     if(Respuesta[0] == 1) {
         return Respuesta[1];
     }
-    // CHECKEAR SI ALGUN DOMINIO QUEDO VACIO QUIZAS
     int Solucion_nueva_copia[P];
     for(int i = 0; i < P; i++) {
         Solucion_nueva_copia[i] = Solucion[i];
@@ -191,98 +163,13 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
     list<int>::iterator valor_siguiente_dominio;
     for(valor_siguiente_dominio = Aviones_nueva_copia[Indice + 1].dominio.begin(); valor_siguiente_dominio != Aviones_nueva_copia[Indice + 1].dominio.end(); ++valor_siguiente_dominio) {
         int estado = ALSP_v2(MATRIZ_DISTANCIAS, Aviones_nueva_copia, Indice + 1, *valor_siguiente_dominio, Solucion_nueva_copia, P);
-        cout << "Estado: " << estado;
-        if(estado != -2 && estado != Indice + 1) { // ACA ESTA MAL, muere cuando encuentra solucion y se acaba su dominio
-        // con if(estado != -2 && estado != Indice + 1)
-        // hace bien el CBJ pero la 2da variable queda siempre en 200
-        // con if(estado != -2 && estado != Indice)
-        // hace mal el CBJ porque vuelve al 2do avion pero
-        // el 2do avion cambia de 200 
+        if(estado != -2 && estado != Indice + 1) {
             // Si estado es diferente de -2 (no + CBJ) y no es Indice + 1, return estado
             return estado;
         }
     }
-    // Si llega aca quiere decir que se acabaron los valores de su dominio CREO
-    // y estado es != de -2 (o sea aun se puede hacer salto inteligente) NO NECESARIAMENTE,
-    // PUEDE LLEGAR SIENDO estado == 2
-    // Llega acá si se vació su dominio!!!!!!!!!!!!!!
-    // DEBO DEFINIR QUE HACER SI ESTADO == -2
-    //
-    //
-    // if(estado != -2) {
-    //     int siguienteIndice = escogerIndiceSaltoInteligente(Aviones_nueva_copia[Indice + 1].conjuntoconflicto);
-    //     cout << " Indice + 1: " << Indice + 1 << " siguienteIndice: " << siguienteIndice << endl;
-    //     for(int i = 0; i < P; i++) {
-    //             cout << Solucion[i] << ",";
-    //         }
-    //         cout << endl;
-    //     return siguienteIndice;
-    // }
-    //
-    //
-    // int siguienteIndice = escogerIndiceSaltoInteligente(Aviones_nueva_copia[Indice + 1].conjuntoconflicto);
-    // cout << " Indice + 1: " << Indice + 1 << " siguienteIndice: " << siguienteIndice << endl;
-    // for(int i = 0; i < P; i++) {
-    //         cout << Solucion[i] << ",";
-    //     }
-    //     cout << endl;
-    // return siguienteIndice;
     return -2;
 }
-
-
-// int ALSP(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, int Valor,  int* Solucion, int P) {
-//     // RETORNA: estado, que es un parametro también.
-//     // Estado es la variable que ayuda con CBJ
-//     // Si estado == -2, entonces quiere decir que se encontró
-//     // una solución, o sea que en esa rama no deberían haber más saltos
-//     // inteligentes, por lo que se mantiene retornando -2 para hacer sólo FC.
-//     // En otro caso, si aún no encuentra solución
-//     // y Indice + 1 == estado se cumple, entonces se sigue igual q siempre.
-//     // Si no se cumple, quiere decir que estado es una valor
-//     // del conjuntoconflicto de una variable a la cual se le acabó su dominio
-//     // entonces se hizo CBJ
-//     Solucion[Indice] = Valor;
-//     if(Indice >= P - 1) {
-//         // for(int i = 0; i < P; i++) {
-//         //     cout << Solucion[i] << ",";
-//         // }
-//         // cout << endl;
-//         //
-//         // SI ENCUENTRA SOLUCION DEBERIA RETORNAR CODIGO ESPECIAL "ej -2"
-//         // PARA DECIR QUE COMO ENCONTRO SOLUCION, ENTONCES EN ESTA RAMA
-//         // NO SE PUEDE HACER MÁS SALTO INTELIGENTE.
-//         return -2;
-//     }
-    
-//     vector<Avion> Aviones_nueva_copia;
-//     Aviones_nueva_copia = Filtrar_espacio_busqueda(MATRIZ_DISTANCIAS, Aviones_copia, Indice, Valor, P);
-//     int Solucion_nueva_copia[P];
-//     for(int i = 0; i < P; i++) {
-//         Solucion_nueva_copia[i] = Solucion[i];
-//     }
-
-//     list<int>::iterator valor_siguiente_dominio;
-//     for(valor_siguiente_dominio = Aviones_nueva_copia[Indice + 1].dominio.begin(); valor_siguiente_dominio != Aviones_nueva_copia[Indice + 1].dominio.end(); ++valor_siguiente_dominio) {
-//         //ALSP(MATRIZ_DISTANCIAS, Aviones_nueva_copia, Indice + 1, *valor_siguiente_dominio, Solucion_nueva_copia, P);
-//         if(estado == -2 || estado == Indice + 1) {
-//             ALSP(MATRIZ_DISTANCIAS, Aviones_nueva_copia, Indice + 1, *valor_siguiente_dominio, Solucion_nueva_copia, P);
-//         }
-//         else {
-//             return estado;
-//         }
-//     }
-//     // Si llega aca quiere decir que se acabaron los valores de su dominio CREO
-//     // y estado es != de -2 (o sea aun se puede hacer salto inteligente)
-//     int siguienteIndice = escogerIndiceSaltoInteligente(Aviones_nueva_copia[Indice + 1].conjuntoconflicto);
-//     return siguienteIndice;
-    
-//     // return ;
-// }
-
-
-
-
 
 int main(int argc, char *argv[]) {
     // Lectura de instancia
@@ -301,7 +188,6 @@ int main(int argc, char *argv[]) {
     token = line.substr(0, pos);
     line.erase(0, pos + delimeter.length());
     int P = stoi(token);
-    // int MATRIZ_DISTANCIAS[P][P];
     int **MATRIZ_DISTANCIAS = new int*[P];
     for(int i = 0; i < P; i++) {
         MATRIZ_DISTANCIAS[i] = new int[P];
