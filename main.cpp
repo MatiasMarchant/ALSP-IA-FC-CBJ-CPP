@@ -40,6 +40,9 @@ Falta:
 #include <list>
 #include <map>
 #include <time.h>
+#include <signal.h>
+#include <unistd.h>
+#include <stdio.h>
 using namespace std;
 
 // Clases
@@ -70,6 +73,62 @@ class Solucion {
 
 Solucion Solucion_current;
 Solucion Solucion_best;
+
+void my_handler(int s) {
+    if(Solucion_best.Cant_Instanciaciones == 0) {
+        // Printear solucion_current
+        cout << endl << "Cantidad instanciaciones: " << Solucion_current.Cant_Instanciaciones << endl;
+        cout << "Cantidad de chequeos: " << Solucion_current.Cant_Chequeos << endl;
+        cout << "Cantidad de retornos: " << Solucion_current.Cant_Retornos << endl;
+        cout << "Pares (Avión->Instante): ";
+        for(int i = 0; i < (int) Solucion_current.AvioneseInstante.size(); i++) {
+            cout << "(" << i << "->" << Solucion_current.AvioneseInstante[i] << "), ";
+        }
+        cout << endl;
+
+        ofstream myfile;
+        myfile.open("out.txt");
+        myfile << "Cantidad de instanciaciones: " << Solucion_current.Cant_Instanciaciones << "\n";
+        myfile << "Cantidad de chequeos: " << Solucion_current.Cant_Chequeos << "\n";
+        myfile << "Cantidad de retornos: " << Solucion_current.Cant_Retornos << "\n";
+        myfile << "Pares (Avión->Instante): ";
+        for(int i = 0; i < (int) Solucion_current.AvioneseInstante.size(); i++) {
+            myfile << "(" << i << "->" << Solucion_current.AvioneseInstante[i] << "), ";
+        }
+        myfile << "\n";
+        myfile << "Tiempo de ejecución: " << Solucion_current.Tiempo << "\n";
+        myfile.close();
+
+        exit(1);
+    }
+    else {
+        // Printear solucion_best
+        cout << endl << "Cantidad instanciaciones: " << Solucion_best.Cant_Instanciaciones << endl;
+        cout << "Cantidad de chequeos: " << Solucion_best.Cant_Chequeos << endl;
+        cout << "Cantidad de retornos: " << Solucion_best.Cant_Retornos << endl;
+        cout << "Pares (Avión->Instante): ";
+        for(int i = 0; i < (int) Solucion_best.AvioneseInstante.size(); i++) {
+            cout << "(" << i << "->" << Solucion_best.AvioneseInstante[i] << "), ";
+        }
+        cout << endl;
+
+        ofstream myfile;
+        myfile.open("out.txt");
+        myfile << "Cantidad de instanciaciones: " << Solucion_best.Cant_Instanciaciones << "\n";
+        myfile << "Cantidad de chequeos: " << Solucion_best.Cant_Chequeos << "\n";
+        myfile << "Cantidad de retornos: " << Solucion_best.Cant_Retornos << "\n";
+        myfile << "Pares (Avión->Instante): ";
+        for(int i = 0; i < (int) Solucion_best.AvioneseInstante.size(); i++) {
+            myfile << "(" << i << "->" << Solucion_best.AvioneseInstante[i] << "), ";
+        }
+        myfile << "\n";
+        myfile << "Tiempo de ejecución: " << Solucion_best.Tiempo << "\n";
+        myfile.close();
+
+        exit(1);
+    }
+    
+}
 
 std::vector<Avion> deepCopydeAviones(vector<Avion> Aviones, int P) {
     vector<Avion> Aviones_copia(P, Avion());
@@ -109,7 +168,7 @@ vector<int> agregarindiceaconflictos(vector<int> conjuntoconflicto, int Indice, 
     return conjuntoconflicto;
 }
 
-vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, int Valor, int P) {
+vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, int Valor, int P, int nro_avion) {
     int x_i = Valor;
     vector<Avion> Aviones_nueva_copia = deepCopydeAviones(Aviones_copia, P);
     vector<Avion>::iterator avion_no_instanciado;
@@ -120,7 +179,7 @@ vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Av
             for(x_j = avion_no_instanciado->dominio.begin(); x_j != avion_no_instanciado->dominio.end(); ++x_j) {
                 // ACA SE CUENTAN LOS CHEQUEOS
                 Solucion_current.Cant_Chequeos += 1;
-                if(*x_j < x_i + MATRIZ_DISTANCIAS[avion_no_instanciado->indice][Indice] && *x_j > x_i - MATRIZ_DISTANCIAS[avion_no_instanciado->indice][Indice]) {
+                if(*x_j < x_i + MATRIZ_DISTANCIAS[avion_no_instanciado->indice][nro_avion] && *x_j > x_i - MATRIZ_DISTANCIAS[avion_no_instanciado->indice][nro_avion]) {
                     // Significa que debo borrar x_j de avion_no_instanciado->dominio
                     copia_dominio.remove(*x_j);
                     // Agregar Indice a avion_no_instanciado->conjuntoconflictos
@@ -184,10 +243,10 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
     if(Indice >= P -1) {
         // Print solucion
         Solucion_current.end = clock();
-        for(int i = 0; i < P; i++) {
-            cout << Solucion[i] << ",";
-        }
-        cout << endl;
+        // for(int i = 0; i < P; i++) {
+        //     cout << Solucion[i] << ",";
+        // }
+        // cout << endl;
         // Calcular costo y tiempo
         Solucion_current.Costo = 0;
         Solucion_current.Tiempo = (double)(Solucion_current.end - Solucion_current.start)/(CLOCKS_PER_SEC);
@@ -209,7 +268,7 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
     }
 
     vector<Avion> Aviones_nueva_copia;
-    Aviones_nueva_copia = Filtrar_espacio_busqueda(MATRIZ_DISTANCIAS, Aviones_copia, Indice, Valor, P);
+    Aviones_nueva_copia = Filtrar_espacio_busqueda(MATRIZ_DISTANCIAS, Aviones_copia, Indice, Valor, P, nro_avion);
     vector<int> Respuesta = HayAlgunDominioVacio(Aviones_nueva_copia);
     if(Respuesta[0] == 1) {
         // ACA SE PUEDEN CONTAR RETORNOS
@@ -237,6 +296,12 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
 }
 
 int main(int argc, char *argv[]) {
+    struct sigaction sigIntHandler;
+    sigIntHandler.sa_handler = my_handler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+    sigaction(SIGINT, &sigIntHandler, NULL);
+
     // Lectura de instancia
     string FileName(argv[1]);
     ifstream file_instancia(FileName);
