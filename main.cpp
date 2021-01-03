@@ -14,6 +14,23 @@
 //     cout << (*it) << endl;
 // }
 
+/*
+Falta:
+    Entregar por pantalla:
+        Solución (Avión y su instante de tiempo)
+        Costo total
+        Tiempo de cómputo
+    Para hacer lo anterior, debo implementar la función objetivo y los prints
+    necesarios
+
+    Implementar mostrar por pantalla y registrar en un archivo de texto:
+        Cantidad de instanciaciones
+        Cantidad de chequeos
+        Cantidad de retornos
+        Subconjunto de aviones que alcanzó a asignarse un tiempo de aterrizaje
+        Tiempo de ejecución
+*/
+
 // #include "includes.h"
 // #include "globales.h"
 #include <vector>
@@ -21,6 +38,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <list>
+#include <map>
 using namespace std;
 
 // Clases
@@ -34,7 +52,21 @@ class Avion {
         int indice;
         list<int> dominio;
         vector<int> conjuntoconflicto;
+        int nro_avion;
 };
+
+class Solucion {
+    public:
+        map<int, int> AvioneseInstante;
+        int Costo;
+        int Tiempo;
+        int Cant_Instanciaciones;
+        int Cant_Chequeos;
+        int Cant_Retornos;
+};
+
+Solucion Solucion_current;
+Solucion Solucion_best;
 
 std::vector<Avion> deepCopydeAviones(vector<Avion> Aviones, int P) {
     vector<Avion> Aviones_copia(P, Avion());
@@ -47,6 +79,7 @@ std::vector<Avion> deepCopydeAviones(vector<Avion> Aviones, int P) {
         Aviones_copia[contador_aviones].g = Aviones[contador_aviones].g;
         Aviones_copia[contador_aviones].h = Aviones[contador_aviones].h;
         Aviones_copia[contador_aviones].indice = Aviones[contador_aviones].indice;
+        Aviones_copia[contador_aviones].nro_avion = Aviones[contador_aviones].nro_avion;
         for(int k = Aviones_copia[contador_aviones].E; k <= Aviones[contador_aviones].L; k++) {
             Aviones_copia[contador_aviones].dominio.push_back(k);
         }
@@ -82,6 +115,7 @@ vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Av
             list<int> copia_dominio(avion_no_instanciado->dominio);
             list<int>::iterator x_j;
             for(x_j = avion_no_instanciado->dominio.begin(); x_j != avion_no_instanciado->dominio.end(); ++x_j) {
+                // ACA SE CUENTAN LOS CHEQUEOS
                 if(*x_j < x_i + MATRIZ_DISTANCIAS[avion_no_instanciado->indice][Indice] && *x_j > x_i - MATRIZ_DISTANCIAS[avion_no_instanciado->indice][Indice]) {
                     // Significa que debo borrar x_j de avion_no_instanciado->dominio
                     copia_dominio.remove(*x_j);
@@ -140,12 +174,14 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
     // En caso que no esté libre de saltos inteligentes, estado tomará el valor del índice del avión
     // al cual se debe saltar, basándose en el conjunto de conflicto de la variable con dominio vacío
     Solucion[Indice] = Valor;
+    // ACA SE CUENTAN LAS INSTANCIACIONES
     if(Indice >= P -1) {
         // Print solucion
         for(int i = 0; i < P; i++) {
             cout << Solucion[i] << ",";
         }
         cout << endl;
+        // ACA SE PUEDEN CONTAR RETORNOS
         return -2;
     }
 
@@ -153,6 +189,7 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
     Aviones_nueva_copia = Filtrar_espacio_busqueda(MATRIZ_DISTANCIAS, Aviones_copia, Indice, Valor, P);
     vector<int> Respuesta = HayAlgunDominioVacio(Aviones_nueva_copia);
     if(Respuesta[0] == 1) {
+        // ACA SE PUEDEN CONTAR RETORNOS
         return Respuesta[1];
     }
     int Solucion_nueva_copia[P];
@@ -165,9 +202,11 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
         int estado = ALSP_v2(MATRIZ_DISTANCIAS, Aviones_nueva_copia, Indice + 1, *valor_siguiente_dominio, Solucion_nueva_copia, P);
         if(estado != -2 && estado != Indice + 1) {
             // Si estado es diferente de -2 (no + CBJ) y no es Indice + 1, return estado
+            // ACA SE PUEDEN CONTAR RETORNOS
             return estado;
         }
     }
+    // ACA SE PUEDEN CONTAR RETORNOS
     return -2;
 }
 
@@ -224,6 +263,7 @@ int main(int argc, char *argv[]) {
         Aviones[contador_aviones].g = arreglo_aux[3];
         Aviones[contador_aviones].h = arreglo_aux[4];
         Aviones[contador_aviones].indice = contador_aviones;
+        Aviones[contador_aviones].nro_avion = contador_aviones;
         for(int k = Aviones[contador_aviones].E; k <= Aviones[contador_aviones].L; k++) {
             Aviones[contador_aviones].dominio.push_back(k);
         }
