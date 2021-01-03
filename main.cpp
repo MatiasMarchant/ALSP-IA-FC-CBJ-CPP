@@ -138,6 +138,8 @@ vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Av
     return Aviones_copia;
 }
 
+
+
 int escogerIndiceSaltoInteligente(vector<int> conjuntoconflicto) {
     int mayor = -9999;
     vector<int>::iterator iterador;
@@ -147,6 +149,19 @@ int escogerIndiceSaltoInteligente(vector<int> conjuntoconflicto) {
         }
     }
     return mayor;
+}
+
+vector<int> HayAlgunDominioVacio(vector<Avion> Aviones_nueva_copia) {
+    vector<Avion>::iterator avion;
+    vector<int> Respuesta;
+    for(avion = Aviones_nueva_copia.begin(); avion != Aviones_nueva_copia.end(); ++avion) {
+        if(avion->dominio.empty()) { // Si esta vacio, retornar [1, escogerIndiceSaltoInteligente]
+            Respuesta.push_back(1);
+            Respuesta.push_back(escogerIndiceSaltoInteligente(avion->conjuntoconflicto));
+        }
+    }
+    Respuesta.push_back(0);
+    return Respuesta;
 }
 
 int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, int Valor, int* Solucion, int P) {
@@ -163,6 +178,10 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
 
     vector<Avion> Aviones_nueva_copia;
     Aviones_nueva_copia = Filtrar_espacio_busqueda(MATRIZ_DISTANCIAS, Aviones_copia, Indice, Valor, P);
+    vector<int> Respuesta = HayAlgunDominioVacio(Aviones_nueva_copia);
+    if(Respuesta[0] == 1) {
+        return Respuesta[1];
+    }
     // CHECKEAR SI ALGUN DOMINIO QUEDO VACIO QUIZAS
     int Solucion_nueva_copia[P];
     for(int i = 0; i < P; i++) {
@@ -201,13 +220,13 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
     // }
     //
     //
-    int siguienteIndice = escogerIndiceSaltoInteligente(Aviones_nueva_copia[Indice + 1].conjuntoconflicto);
-    cout << " Indice + 1: " << Indice + 1 << " siguienteIndice: " << siguienteIndice << endl;
-    for(int i = 0; i < P; i++) {
-            cout << Solucion[i] << ",";
-        }
-        cout << endl;
-    return siguienteIndice;
+    // int siguienteIndice = escogerIndiceSaltoInteligente(Aviones_nueva_copia[Indice + 1].conjuntoconflicto);
+    // cout << " Indice + 1: " << Indice + 1 << " siguienteIndice: " << siguienteIndice << endl;
+    // for(int i = 0; i < P; i++) {
+    //         cout << Solucion[i] << ",";
+    //     }
+    //     cout << endl;
+    // return siguienteIndice;
     return -2;
 }
 
