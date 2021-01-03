@@ -39,6 +39,7 @@ Falta:
 #include <stdlib.h>
 #include <list>
 #include <map>
+#include <time.h>
 using namespace std;
 
 // Clases
@@ -59,10 +60,12 @@ class Solucion {
     public:
         map<int, int> AvioneseInstante;
         int Costo;
-        int Tiempo;
+        double Tiempo;
         int Cant_Instanciaciones;
         int Cant_Chequeos;
         int Cant_Retornos;
+        clock_t start;
+        clock_t end;
 };
 
 Solucion Solucion_current;
@@ -116,6 +119,7 @@ vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Av
             list<int>::iterator x_j;
             for(x_j = avion_no_instanciado->dominio.begin(); x_j != avion_no_instanciado->dominio.end(); ++x_j) {
                 // ACA SE CUENTAN LOS CHEQUEOS
+                Solucion_current.Cant_Chequeos += 1;
                 if(*x_j < x_i + MATRIZ_DISTANCIAS[avion_no_instanciado->indice][Indice] && *x_j > x_i - MATRIZ_DISTANCIAS[avion_no_instanciado->indice][Indice]) {
                     // Significa que debo borrar x_j de avion_no_instanciado->dominio
                     copia_dominio.remove(*x_j);
@@ -168,20 +172,39 @@ vector<int> HayAlgunDominioVacio(vector<Avion> Aviones_nueva_copia) {
     return Respuesta;
 }
 
-int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, int Valor, int* Solucion, int P) {
+int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, int Valor, int* Solucion, int P, int nro_avion) {
     // Retorna: estado
     // Si estado == -2, significa que se encontró una solución y la rama está libre de saltos inteligentes (CBJ)
     // En caso que no esté libre de saltos inteligentes, estado tomará el valor del índice del avión
     // al cual se debe saltar, basándose en el conjunto de conflicto de la variable con dominio vacío
     Solucion[Indice] = Valor;
+    Solucion_current.AvioneseInstante[nro_avion] = Valor;
+    Solucion_current.Cant_Instanciaciones += 1;
     // ACA SE CUENTAN LAS INSTANCIACIONES
     if(Indice >= P -1) {
         // Print solucion
+        Solucion_current.end = clock();
         for(int i = 0; i < P; i++) {
             cout << Solucion[i] << ",";
         }
         cout << endl;
+        // Calcular costo y tiempo
+        Solucion_current.Costo = 0;
+        Solucion_current.Tiempo = (double)(Solucion_current.end - Solucion_current.start)/(CLOCKS_PER_SEC);
+        for(int f = 0; f < P; f++) {
+            Solucion_current.Costo += Aviones_copia[f].g*max(0, Aviones_copia[f].T - Solucion[f]) + Aviones_copia[f].h*max(0, Solucion[f] - Aviones_copia[f].T);
+        }
+        // Chequear si solucion_current > solucion_best
+        if(Solucion_current.Costo < Solucion_best.Costo) {
+            Solucion_best.AvioneseInstante = Solucion_current.AvioneseInstante;
+            Solucion_best.Costo = Solucion_current.Costo;
+            Solucion_best.Tiempo = Solucion_current.Tiempo;
+            Solucion_best.Cant_Instanciaciones = Solucion_current.Cant_Instanciaciones;
+            Solucion_best.Cant_Chequeos = Solucion_current.Cant_Chequeos;
+            Solucion_best.Cant_Retornos = Solucion_current.Cant_Retornos;
+        }
         // ACA SE PUEDEN CONTAR RETORNOS
+        Solucion_current.Cant_Retornos += 1;
         return -2;
     }
 
@@ -190,6 +213,7 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
     vector<int> Respuesta = HayAlgunDominioVacio(Aviones_nueva_copia);
     if(Respuesta[0] == 1) {
         // ACA SE PUEDEN CONTAR RETORNOS
+        Solucion_current.Cant_Retornos += 1;
         return Respuesta[1];
     }
     int Solucion_nueva_copia[P];
@@ -199,14 +223,16 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
 
     list<int>::iterator valor_siguiente_dominio;
     for(valor_siguiente_dominio = Aviones_nueva_copia[Indice + 1].dominio.begin(); valor_siguiente_dominio != Aviones_nueva_copia[Indice + 1].dominio.end(); ++valor_siguiente_dominio) {
-        int estado = ALSP_v2(MATRIZ_DISTANCIAS, Aviones_nueva_copia, Indice + 1, *valor_siguiente_dominio, Solucion_nueva_copia, P);
+        int estado = ALSP_v2(MATRIZ_DISTANCIAS, Aviones_nueva_copia, Indice + 1, *valor_siguiente_dominio, Solucion_nueva_copia, P, Aviones_nueva_copia[Indice + 1].nro_avion);
         if(estado != -2 && estado != Indice + 1) {
             // Si estado es diferente de -2 (no + CBJ) y no es Indice + 1, return estado
             // ACA SE PUEDEN CONTAR RETORNOS
+            Solucion_current.Cant_Retornos += 1;
             return estado;
         }
     }
     // ACA SE PUEDEN CONTAR RETORNOS
+    Solucion_current.Cant_Retornos += 1;
     return -2;
 }
 
@@ -291,10 +317,37 @@ int main(int argc, char *argv[]) {
     file_instancia.close();
 
     int Solucion[P];
+    // Seteo Solucion_current y Solucion_best
+    Solucion_current.Costo = 99999;
+    Solucion_current.Tiempo = 0;
+    Solucion_current.Cant_Instanciaciones = 0;
+    Solucion_current.Cant_Chequeos = 0;
+    Solucion_current.Cant_Retornos = 0;
+    Solucion_best.Costo = 99999;
+    Solucion_best.Tiempo = 0;
+    Solucion_best.Cant_Instanciaciones = 0;
+    Solucion_best.Cant_Chequeos = 0;
+    Solucion_best.Cant_Retornos = 0;
+    
     vector<Avion> Aviones_copia = deepCopydeAviones(Aviones, P);
     list<int>::iterator valor;
+    Solucion_current.start = clock();
     for(valor = Aviones[0].dominio.begin(); valor != Aviones[0].dominio.end(); ++valor) {
-        ALSP_v2(MATRIZ_DISTANCIAS, Aviones_copia, 0, *valor, Solucion, P);
+        ALSP_v2(MATRIZ_DISTANCIAS, Aviones_copia, 0, *valor, Solucion, P, Aviones_copia[0].nro_avion);
     }
+    
+    // Recordar que con ctrl + c se debe registrar en un archivo de texto
+    // Printear solucion_best
+    cout << "Pares (Avión->Instante): ";
+    for(int i = 0; i < P; i++) {
+        cout << "(" << i << "->" << Solucion_best.AvioneseInstante[i] << "), ";
+    }
+    cout << endl;
+    cout << "Costo: " << Solucion_best.Costo << endl;
+    cout << "Tiempo: " << Solucion_best.Tiempo << endl;
+    cout << "Cantidad instanciaciones: " << Solucion_best.Cant_Instanciaciones << endl;
+    cout << "Cantidad de chequeos: " << Solucion_best.Cant_Chequeos << endl;
+    cout << "Cantidad de retornos: " << Solucion_best.Cant_Retornos << endl;
+
     return 0;
 }
