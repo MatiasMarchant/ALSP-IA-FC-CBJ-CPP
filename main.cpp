@@ -67,6 +67,7 @@ void my_handler(int s) {
             cout << "(" << i << "->" << Solucion_current.AvioneseInstante[i] << "), ";
         }
         cout << endl;
+        cout << "Costo: " << Solucion_current.Costo << endl;
 
         ofstream myfile;
         myfile.open("out.txt");
@@ -79,6 +80,7 @@ void my_handler(int s) {
         }
         myfile << "\n";
         myfile << "Tiempo de ejecución: " << Solucion_current.Tiempo << "\n";
+        myfile << "Costo: " << Solucion_current.Costo << "\n";
         myfile.close();
 
         exit(1);
@@ -93,6 +95,7 @@ void my_handler(int s) {
             cout << "(" << i << "->" << Solucion_best.AvioneseInstante[i] << "), ";
         }
         cout << endl;
+        cout << "Costo: " << Solucion_best.Costo << endl;
 
         ofstream myfile;
         myfile.open("out.txt");
@@ -105,6 +108,7 @@ void my_handler(int s) {
         }
         myfile << "\n";
         myfile << "Tiempo de ejecución: " << Solucion_best.Tiempo << "\n";
+        myfile << "Costo: " << Solucion_best.Costo << "\n";
         myfile.close();
 
         exit(1);
