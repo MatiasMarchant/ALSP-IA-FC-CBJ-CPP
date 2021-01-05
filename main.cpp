@@ -173,7 +173,7 @@ vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Av
                 if(*x_j < x_i + MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion] && *x_j > x_i - MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion]) {
                     // Significa que debo borrar x_j de avion_no_instanciado->dominio
                     if(debug) {
-                        cout << "x_" << avion_no_instanciado->nro_avion << " = " << *x_j << " eliminado porque x_" << nro_avion << " = " << x_i << endl;
+                        cout << "x_" << avion_no_instanciado->nro_avion << " = " << *x_j << " eliminado por x_" << nro_avion << " = " << x_i << endl;
                     }
                     copia_dominio.remove(*x_j);
                     // Agregar Indice a avion_no_instanciado->conjuntoconflictos
@@ -238,6 +238,7 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
         // Print solucion
         Solucion_current.end = clock();
         if(debug) {
+            cout << "Solucion: ";
             for(int i = 0; i < P; i++) {
                 cout << Solucion[i] << ",";
             }
