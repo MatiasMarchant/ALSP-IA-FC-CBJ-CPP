@@ -37,9 +37,13 @@ make clean
 
 ## Información
 Algoritmo = Forward Checking con CBJ
+
 Problema = ALSP o Aircraft Landing Spacing Problem
+
 Acercamiento = Búsqueda completa con órdenes de instanciación de variables y de valores aleatorios
+
 Representación = Arreglo de enteros
+
 Función objetivo = Minimizar el costo de la separación del tiempo óptimo de aterrizaje
 
 ## Consideraciones
