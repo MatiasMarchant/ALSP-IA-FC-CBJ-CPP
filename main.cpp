@@ -14,35 +14,13 @@
 //     cout << (*it) << endl;
 // }
 
-/*
-Falta:
-    Entregar por pantalla:
-        Solución (Avión y su instante de tiempo)
-        Costo total
-        Tiempo de cómputo
-    Para hacer lo anterior, debo implementar la función objetivo y los prints
-    necesarios
-
-    Implementar mostrar por pantalla y registrar en un archivo de texto:
-        Cantidad de instanciaciones
-        Cantidad de chequeos
-        Cantidad de retornos
-        Subconjunto de aviones que alcanzó a asignarse un tiempo de aterrizaje
-        Tiempo de ejecución
-*/
-
-// #include "includes.h"
-// #include "globales.h"
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include <stdlib.h>
 #include <list>
 #include <map>
 #include <time.h>
 #include <signal.h>
-#include <unistd.h>
-#include <stdio.h>
 using namespace std;
 
 // Clases
@@ -401,8 +379,7 @@ int main(int argc, char *argv[]) {
         ALSP_v2(MATRIZ_DISTANCIAS, Aviones_copia, 0, *valor, Solucion, P, Aviones_copia[0].nro_avion);
     }
     
-    // Recordar que con ctrl + c se debe registrar en un archivo de texto
-    // Printear solucion_best
+    // Cuando termina, printear solucion_best
     cout << "Pares (Avión->Instante): ";
     for(int i = 0; i < P; i++) {
         cout << "(" << i << "->" << Solucion_best.AvioneseInstante[i] << "), ";
