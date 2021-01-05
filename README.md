@@ -28,7 +28,7 @@ y después usar
 ```
 ./FCCBJ directorio_instancia semilla debug
 ```
-con directorio_instancia el directorio de la instancia, semilla la semilla que se usará y debug = 0 si no se desean prints, debug = 1 si se desean prints de cómo trabaja el programa.
+con directorio_instancia el directorio de la instancia, semilla la semilla que se usará y debug = 0 si no se desean prints, debug = 1 si se desean prints de las soluciones que encuentra el programa.
 
 ## Para limpiar
 ```

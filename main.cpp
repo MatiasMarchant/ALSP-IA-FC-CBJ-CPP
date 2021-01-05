@@ -51,6 +51,8 @@ class Solucion {
 
 Solucion Solucion_current;
 Solucion Solucion_best;
+int semilla;
+int debug;
 
 void my_handler(int s) {
     if(Solucion_best.Cant_Instanciaciones == 0) {
@@ -221,10 +223,13 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
     if(Indice >= P -1) {
         // Print solucion
         Solucion_current.end = clock();
-        // for(int i = 0; i < P; i++) {
-        //     cout << Solucion[i] << ",";
-        // }
-        // cout << endl;
+        if(debug) {
+            for(int i = 0; i < P; i++) {
+                cout << Solucion[i] << ",";
+            }
+            cout << endl;
+        }
+        
         // Calcular costo y tiempo
         Solucion_current.Costo = 0;
         Solucion_current.Tiempo = (double)(Solucion_current.end - Solucion_current.start)/(CLOCKS_PER_SEC);
@@ -279,6 +284,8 @@ int main(int argc, char *argv[]) {
     sigemptyset(&sigIntHandler.sa_mask);
     sigIntHandler.sa_flags = 0;
     sigaction(SIGINT, &sigIntHandler, NULL);
+    semilla = atoi(argv[2]);
+    debug = atoi(argv[3]);
 
     // Lectura de instancia
     string FileName(argv[1]);
