@@ -21,6 +21,8 @@
 #include <map>
 #include <time.h>
 #include <signal.h>
+#include <random>
+#include <algorithm>
 using namespace std;
 
 // Clases
@@ -32,7 +34,7 @@ class Avion {
         float g;
         float h;
         int indice;
-        list<int> dominio;
+        vector<int> dominio;
         vector<int> conjuntoconflicto;
         int nro_avion;
 };
@@ -154,33 +156,24 @@ vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Av
     vector<Avion>::iterator avion_no_instanciado;
     for(avion_no_instanciado = Aviones_copia.begin(); avion_no_instanciado != Aviones_copia.end(); ++avion_no_instanciado) {
         if(avion_no_instanciado->indice >= Indice + 1) {
-            list<int> copia_dominio(avion_no_instanciado->dominio);
-            list<int>::iterator x_j;
-            for(x_j = avion_no_instanciado->dominio.begin(); x_j != avion_no_instanciado->dominio.end(); ++x_j) {
+            vector<int>::iterator x_j;
+
+            x_j = avion_no_instanciado->dominio.begin();
+            while(x_j != avion_no_instanciado->dominio.end()) {
                 // ACA SE CUENTAN LOS CHEQUEOS
                 Solucion_current.Cant_Chequeos += 1;
                 if(*x_j < x_i + MATRIZ_DISTANCIAS[avion_no_instanciado->indice][nro_avion] && *x_j > x_i - MATRIZ_DISTANCIAS[avion_no_instanciado->indice][nro_avion]) {
                     // Significa que debo borrar x_j de avion_no_instanciado->dominio
-                    copia_dominio.remove(*x_j);
+                    x_j = avion_no_instanciado->dominio.erase(x_j);
                     // Agregar Indice a avion_no_instanciado->conjuntoconflictos
                     avion_no_instanciado->conjuntoconflicto = agregarindiceaconflictos(avion_no_instanciado->conjuntoconflicto, Indice, P);
                 }
+                else {
+                    ++x_j;
+                }
             }
-            avion_no_instanciado->dominio = copia_dominio;
         }
     }
-    // Para printear en caso de debugear
-    // for(avion_no_instanciado = Aviones_copia.begin(); avion_no_instanciado != Aviones_copia.end(); ++avion_no_instanciado) {
-    //     // list<int>::iterator x_j;
-    //     vector<int>::iterator x_j;
-    //     cout << "indice: " << avion_no_instanciado->indice << endl;
-    //     cout << "conjunto conflicto: " << endl;
-    //     for(x_j = avion_no_instanciado->conjuntoconflicto.begin(); x_j != avion_no_instanciado->conjuntoconflicto.end(); ++x_j) {
-    //         cout << *x_j;
-    //     }
-    //     cout << endl;
-
-    // }
     return Aviones_copia;
 }
 
@@ -263,7 +256,7 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
         Solucion_nueva_copia[i] = Solucion[i];
     }
 
-    list<int>::iterator valor_siguiente_dominio;
+    vector<int>::iterator valor_siguiente_dominio;
     for(valor_siguiente_dominio = Aviones_nueva_copia[Indice + 1].dominio.begin(); valor_siguiente_dominio != Aviones_nueva_copia[Indice + 1].dominio.end(); ++valor_siguiente_dominio) {
         int estado = ALSP_v2(MATRIZ_DISTANCIAS, Aviones_nueva_copia, Indice + 1, *valor_siguiente_dominio, Solucion_nueva_copia, P, Aviones_nueva_copia[Indice + 1].nro_avion);
         if(estado != -2 && estado != Indice + 1) {
@@ -343,6 +336,7 @@ int main(int argc, char *argv[]) {
         for(int k = Aviones[contador_aviones].E; k <= Aviones[contador_aviones].L; k++) {
             Aviones[contador_aviones].dominio.push_back(k);
         }
+        shuffle(Aviones[contador_aviones].dominio.begin(), Aviones[contador_aviones].dominio.end(), std::default_random_engine(semilla));
         for(int l = 0; l < P; l++) {
             Aviones[contador_aviones].conjuntoconflicto.push_back(-1); // -1 significa no conflictos (por ahora)
         }
@@ -380,7 +374,7 @@ int main(int argc, char *argv[]) {
     Solucion_best.Cant_Retornos = 0;
     
     vector<Avion> Aviones_copia = deepCopydeAviones(Aviones, P);
-    list<int>::iterator valor;
+    vector<int>::iterator valor;
     Solucion_current.start = clock();
     for(valor = Aviones[0].dominio.begin(); valor != Aviones[0].dominio.end(); ++valor) {
         ALSP_v2(MATRIZ_DISTANCIAS, Aviones_copia, 0, *valor, Solucion, P, Aviones_copia[0].nro_avion);

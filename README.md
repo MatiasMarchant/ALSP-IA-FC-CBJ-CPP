@@ -48,3 +48,4 @@ Función objetivo = Minimizar el costo de la separación del tiempo óptimo de a
 
 ## Consideraciones
 Cuando el programa termina, entrega por pantalla la mejor solución, el costo total y el tiempo de cómputo para llegar a esa solución.
+Cuando se corta la ejecución del programa con Ctrl + C, se muestra la cantidad de instanciaciones, chequeos y retornos contados hasta la mejor solución.
