@@ -6,7 +6,7 @@ prog=FCCBJ
 instancias = InstanciasALSP/Txt/
 
 #semilla
-semilla = 420
+semilla = 439923
 debug = 1
 
 comp:$(prog)

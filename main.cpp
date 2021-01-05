@@ -124,8 +124,14 @@ std::vector<Avion> deepCopydeAviones(vector<Avion> Aviones, int P) {
         Aviones_copia[contador_aviones].h = Aviones[contador_aviones].h;
         Aviones_copia[contador_aviones].indice = Aviones[contador_aviones].indice;
         Aviones_copia[contador_aviones].nro_avion = Aviones[contador_aviones].nro_avion;
+        vector<int> vector_aux_para_shuffle;
         for(int k = Aviones_copia[contador_aviones].E; k <= Aviones[contador_aviones].L; k++) {
-            Aviones_copia[contador_aviones].dominio.push_back(k);
+            vector_aux_para_shuffle.push_back(k);
+        }
+        shuffle(vector_aux_para_shuffle.begin(), vector_aux_para_shuffle.end(), default_random_engine(semilla));
+        vector<int>::iterator vector_aux_iterator;
+        for(vector_aux_iterator = vector_aux_para_shuffle.begin(); vector_aux_iterator != vector_aux_para_shuffle.end(); ++vector_aux_iterator) {
+            Aviones_copia[contador_aviones].dominio.push_back(*vector_aux_iterator);
         }
         for(int l = 0; l < P; l++) {
             Aviones_copia[contador_aviones].conjuntoconflicto.push_back(-1);
