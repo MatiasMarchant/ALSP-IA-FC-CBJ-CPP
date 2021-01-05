@@ -120,6 +120,7 @@ std::vector<Avion> deepCopydeAviones(vector<Avion> Aviones, int P) {
     vector<Avion> Aviones_copia(P, Avion());
     vector<Avion>::iterator it;
     list<int>::iterator dominio_it;
+    vector<int>::iterator conjconf_it;
     int contador_aviones = 0;
     for(it = Aviones.begin(); it != Aviones.end(); ++it) {
         Aviones_copia[contador_aviones].E = it->E;
@@ -132,8 +133,8 @@ std::vector<Avion> deepCopydeAviones(vector<Avion> Aviones, int P) {
         for(dominio_it = it->dominio.begin(); dominio_it != it->dominio.end(); ++dominio_it) {
             Aviones_copia[contador_aviones].dominio.push_back(*dominio_it);
         }
-        for(int l = 0; l < P; l++) {
-            Aviones_copia[contador_aviones].conjuntoconflicto.push_back(-1);
+        for(conjconf_it = it->conjuntoconflicto.begin(); conjconf_it != it->conjuntoconflicto.end(); ++conjconf_it) {
+            Aviones_copia[contador_aviones].conjuntoconflicto.push_back(*conjconf_it);
         }
         contador_aviones += 1;
     }
@@ -157,6 +158,9 @@ vector<int> agregarindiceaconflictos(vector<int> conjuntoconflicto, int Indice, 
 
 vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, int Valor, int P, int nro_avion) {
     int x_i = Valor;
+    if(debug) {
+        cout << "Filtrando valores para x_" << nro_avion << " = " << x_i << endl;
+    }
     vector<Avion> Aviones_nueva_copia = deepCopydeAviones(Aviones_copia, P);
     vector<Avion>::iterator avion_no_instanciado;
     for(avion_no_instanciado = Aviones_copia.begin(); avion_no_instanciado != Aviones_copia.end(); ++avion_no_instanciado) {
@@ -166,8 +170,11 @@ vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Av
             for(x_j = avion_no_instanciado->dominio.begin(); x_j != avion_no_instanciado->dominio.end(); ++x_j) {
                 // ACA SE CUENTAN LOS CHEQUEOS
                 Solucion_current.Cant_Chequeos += 1;
-                if(*x_j < x_i + MATRIZ_DISTANCIAS[avion_no_instanciado->indice][nro_avion] && *x_j > x_i - MATRIZ_DISTANCIAS[avion_no_instanciado->indice][nro_avion]) {
+                if(*x_j < x_i + MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion] && *x_j > x_i - MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion]) {
                     // Significa que debo borrar x_j de avion_no_instanciado->dominio
+                    if(debug) {
+                        cout << "x_" << avion_no_instanciado->nro_avion << " = " << *x_j << " eliminado porque x_" << nro_avion << " = " << x_i << endl;
+                    }
                     copia_dominio.remove(*x_j);
                     // Agregar Indice a avion_no_instanciado->conjuntoconflictos
                     avion_no_instanciado->conjuntoconflicto = agregarindiceaconflictos(avion_no_instanciado->conjuntoconflicto, Indice, P);
@@ -321,6 +328,13 @@ int main(int argc, char *argv[]) {
     
     
     int contador_aviones = 0;
+    int contador_indice_aviones = 0;
+    int contador_indice = P - 1;
+    vector<int> indices_shuffleados_para_contador_aviones;
+    for(int q = 0; q < P; q++) {
+        indices_shuffleados_para_contador_aviones.push_back(q);
+    }
+    shuffle(indices_shuffleados_para_contador_aviones.begin(), indices_shuffleados_para_contador_aviones.end(), default_random_engine(semilla));
     int contador_matrizfila = 0;
     for (int i = 0; i < P; i++) {
         getline(file_instancia, line);
@@ -340,13 +354,16 @@ int main(int argc, char *argv[]) {
             contador += 1;
         }
 
+        contador_aviones = indices_shuffleados_para_contador_aviones[contador_indice];
+        indices_shuffleados_para_contador_aviones.pop_back();
+        contador_indice -= 1;
         Aviones[contador_aviones].E = static_cast<int>(arreglo_aux[0]);
         Aviones[contador_aviones].T = static_cast<int>(arreglo_aux[1]);
         Aviones[contador_aviones].L = static_cast<int>(arreglo_aux[2]);
         Aviones[contador_aviones].g = arreglo_aux[3];
         Aviones[contador_aviones].h = arreglo_aux[4];
         Aviones[contador_aviones].indice = contador_aviones;
-        Aviones[contador_aviones].nro_avion = contador_aviones;
+        Aviones[contador_aviones].nro_avion = contador_indice_aviones;
         
 
         vector<int> vector_aux_para_shuffle;
@@ -363,7 +380,7 @@ int main(int argc, char *argv[]) {
             Aviones[contador_aviones].conjuntoconflicto.push_back(-1); // -1 significa no conflictos (por ahora)
         }
         
-        contador_aviones += 1;
+        contador_indice_aviones += 1;
 
         getline(file_instancia, line);
         pos = line.find(delimeter);
@@ -380,20 +397,6 @@ int main(int argc, char *argv[]) {
         contador_matrizfila += 1;
         contador_matrizcolumna = 0;
     }
-    // Shuffle aviones
-    // vector<Avion>::iterator av_iterator;
-    // for(av_iterator = Aviones.begin(); av_iterator != Aviones.end(); ++av_iterator) {
-    //     cout << av_iterator->indice << endl;
-    // }
-
-    //shuffle(Aviones.begin(), Aviones.end(), default_random_engine(semilla));
-    // Cambiar indices de aviones
-    // vector<Avion>::iterator av_iterator;
-    // int contador_av_iterator = 0;
-    // for(av_iterator = Aviones.begin(); av_iterator != Aviones.end(); ++av_iterator) {
-    //     av_iterator->indice = contador_av_iterator;
-    //     contador_av_iterator += 1;
-    // }
 
     file_instancia.close();
 
@@ -413,7 +416,7 @@ int main(int argc, char *argv[]) {
     vector<Avion> Aviones_copia = deepCopydeAviones(Aviones, P);
     list<int>::iterator valor;
     Solucion_current.start = clock();
-    for(valor = Aviones[0].dominio.begin(); valor != Aviones[0].dominio.end(); ++valor) {
+    for(valor = Aviones_copia[0].dominio.begin(); valor != Aviones_copia[0].dominio.end(); ++valor) {
         ALSP_v2(MATRIZ_DISTANCIAS, Aviones_copia, 0, *valor, Solucion, P, Aviones_copia[0].nro_avion);
     }
     
