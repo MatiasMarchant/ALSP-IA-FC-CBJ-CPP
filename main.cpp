@@ -119,23 +119,18 @@ void my_handler(int s) {
 std::vector<Avion> deepCopydeAviones(vector<Avion> Aviones, int P) {
     vector<Avion> Aviones_copia(P, Avion());
     vector<Avion>::iterator it;
+    list<int>::iterator dominio_it;
     int contador_aviones = 0;
     for(it = Aviones.begin(); it != Aviones.end(); ++it) {
-        Aviones_copia[contador_aviones].E = Aviones[contador_aviones].E;
-        Aviones_copia[contador_aviones].T = Aviones[contador_aviones].T;
-        Aviones_copia[contador_aviones].L = Aviones[contador_aviones].L;
-        Aviones_copia[contador_aviones].g = Aviones[contador_aviones].g;
-        Aviones_copia[contador_aviones].h = Aviones[contador_aviones].h;
-        Aviones_copia[contador_aviones].indice = Aviones[contador_aviones].indice;
-        Aviones_copia[contador_aviones].nro_avion = Aviones[contador_aviones].nro_avion;
-        vector<int> vector_aux_para_shuffle;
-        for(int k = Aviones_copia[contador_aviones].E; k <= Aviones[contador_aviones].L; k++) {
-            vector_aux_para_shuffle.push_back(k);
-        }
-        shuffle(vector_aux_para_shuffle.begin(), vector_aux_para_shuffle.end(), default_random_engine(semilla));
-        vector<int>::iterator vector_aux_iterator;
-        for(vector_aux_iterator = vector_aux_para_shuffle.begin(); vector_aux_iterator != vector_aux_para_shuffle.end(); ++vector_aux_iterator) {
-            Aviones_copia[contador_aviones].dominio.push_back(*vector_aux_iterator);
+        Aviones_copia[contador_aviones].E = it->E;
+        Aviones_copia[contador_aviones].T = it->T;
+        Aviones_copia[contador_aviones].L = it->L;
+        Aviones_copia[contador_aviones].g = it->g;
+        Aviones_copia[contador_aviones].h = it->h;
+        Aviones_copia[contador_aviones].indice = it->indice;
+        Aviones_copia[contador_aviones].nro_avion = it->nro_avion;
+        for(dominio_it = it->dominio.begin(); dominio_it != it->dominio.end(); ++dominio_it) {
+            Aviones_copia[contador_aviones].dominio.push_back(*dominio_it);
         }
         for(int l = 0; l < P; l++) {
             Aviones_copia[contador_aviones].conjuntoconflicto.push_back(-1);
@@ -352,9 +347,18 @@ int main(int argc, char *argv[]) {
         Aviones[contador_aviones].h = arreglo_aux[4];
         Aviones[contador_aviones].indice = contador_aviones;
         Aviones[contador_aviones].nro_avion = contador_aviones;
+        
+
+        vector<int> vector_aux_para_shuffle;
         for(int k = Aviones[contador_aviones].E; k <= Aviones[contador_aviones].L; k++) {
-            Aviones[contador_aviones].dominio.push_back(k);
+            vector_aux_para_shuffle.push_back(k);
         }
+        shuffle(vector_aux_para_shuffle.begin(), vector_aux_para_shuffle.end(), default_random_engine(semilla));
+        vector<int>::iterator vector_aux_iterator;
+        for(vector_aux_iterator = vector_aux_para_shuffle.begin(); vector_aux_iterator != vector_aux_para_shuffle.end(); ++vector_aux_iterator) {
+            Aviones[contador_aviones].dominio.push_back(*vector_aux_iterator);
+        }
+        
         for(int l = 0; l < P; l++) {
             Aviones[contador_aviones].conjuntoconflicto.push_back(-1); // -1 significa no conflictos (por ahora)
         }
@@ -376,6 +380,21 @@ int main(int argc, char *argv[]) {
         contador_matrizfila += 1;
         contador_matrizcolumna = 0;
     }
+    // Shuffle aviones
+    // vector<Avion>::iterator av_iterator;
+    // for(av_iterator = Aviones.begin(); av_iterator != Aviones.end(); ++av_iterator) {
+    //     cout << av_iterator->indice << endl;
+    // }
+
+    //shuffle(Aviones.begin(), Aviones.end(), default_random_engine(semilla));
+    // Cambiar indices de aviones
+    // vector<Avion>::iterator av_iterator;
+    // int contador_av_iterator = 0;
+    // for(av_iterator = Aviones.begin(); av_iterator != Aviones.end(); ++av_iterator) {
+    //     av_iterator->indice = contador_av_iterator;
+    //     contador_av_iterator += 1;
+    // }
+
     file_instancia.close();
 
     int Solucion[P];
