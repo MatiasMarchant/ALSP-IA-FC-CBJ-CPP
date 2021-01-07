@@ -26,9 +26,27 @@ make comp
 ```
 y después usar
 ```
-./FCCBJ directorio_instancia semilla debug
+./FCCBJ directorio_instancia random semilla debug
 ```
-con directorio_instancia el directorio de la instancia, semilla la semilla que se usará y debug = 0 si no se desean prints, debug = 1 si se desean prints de las soluciones que encuentra el programa.
+
+Ejemplo:
+```
+./FCCBJ "InstanciasALSP/Txt/airland0.txt 1 439923 1
+```
+
+Con 
+
+directorio_instancia: Directorio de la instancia.
+
+random = 1 Si se quiere instanciación de variables y valores aleatorios.
+
+random = 0 Si se quiere instanciación de variables con mayores penalizaciones (g y h) primero y con sus mejores valores (más cercanos a T) primero.
+
+semilla: Semilla utilizada si random = 1
+
+debug = 1 Si se desea mostrar por terminal qué variables se instancian, qué valores se filtran y qué soluciones se encuentran en el instante.
+
+debug = 1 Si no se desea lo anterior.
 
 ## Para limpiar
 ```
@@ -40,7 +58,7 @@ Algoritmo = Forward Checking con CBJ
 
 Problema = ALSP o Aircraft Landing Spacing Problem
 
-Acercamiento = Búsqueda completa con órdenes de instanciación de variables y de valores aleatorios
+Acercamiento = Búsqueda completa con órdenes de instanciación de variables y de valores aleatorios ó ordenados instanciando quienes penalizan más primero.
 
 Representación = Arreglo de enteros
 

@@ -8,15 +8,16 @@ instancias = InstanciasALSP/Txt/
 #semilla
 semilla = 439923
 debug = 1
+random = 0
 
 comp:$(prog)
 
 exe0:$(prog)
-	./$(prog) $(instancias)airland0.txt $(semilla) $(debug)
+	./$(prog) $(instancias)airland0.txt $(random) $(semilla) $(debug)
 
 exe1:$(prog)
 	#valgrind --leak-check=full --show-reachable=yes
-	./$(prog) $(instancias)airland1.txt $(semilla) $(debug)
+	./$(prog) $(instancias)airland1.txt $(random) $(semilla) $(debug)
 
 $(prog): main.o
 	$(comp) main.o -o $(prog) $(flags)

@@ -55,6 +55,7 @@ Solucion Solucion_current;
 Solucion Solucion_best;
 int semilla;
 int debug;
+int quiere_random;
 
 void my_handler(int s) {
     if(Solucion_best.Cant_Instanciaciones == 0) {
@@ -159,7 +160,7 @@ vector<int> agregarindiceaconflictos(vector<int> conjuntoconflicto, int Indice, 
 vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, int Valor, int P, int nro_avion) {
     int x_i = Valor;
     if(debug) {
-        cout << "Filtrando valores para x_" << nro_avion << " = " << x_i << endl;
+        cout << "[FC] Filtrando valores para x_" << nro_avion << " = " << x_i << endl;
     }
     vector<Avion> Aviones_nueva_copia = deepCopydeAviones(Aviones_copia, P);
     vector<Avion>::iterator avion_no_instanciado;
@@ -173,7 +174,7 @@ vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Av
                 if(*x_j < x_i + MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion] && *x_j > x_i - MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion]) {
                     // Significa que debo borrar x_j de avion_no_instanciado->dominio
                     if(debug) {
-                        cout << "x_" << avion_no_instanciado->nro_avion << " = " << *x_j << " eliminado por x_" << nro_avion << " = " << x_i << endl;
+                        cout << "[FC] x_" << avion_no_instanciado->nro_avion << " = " << *x_j << " eliminado por x_" << nro_avion << " = " << x_i << endl;
                     }
                     copia_dominio.remove(*x_j);
                     // Agregar Indice a avion_no_instanciado->conjuntoconflictos
@@ -238,7 +239,7 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
         // Print solucion
         Solucion_current.end = clock();
         if(debug) {
-            cout << "Solucion: ";
+            cout << "[Solucion] ";
             for(int i = 0; i < P; i++) {
                 cout << Solucion[i] << ",";
             }
@@ -262,6 +263,7 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
         }
         // ACA SE PUEDEN CONTAR RETORNOS
         Solucion_current.Cant_Retornos += 1;
+        // cout << "[CBJ] Ya encontre solucion en esta rama, no hay salto inteligente" << endl;
         return -2;
     }
 
@@ -271,6 +273,10 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
     if(Respuesta[0] == 1) {
         // ACA SE PUEDEN CONTAR RETORNOS
         Solucion_current.Cant_Retornos += 1;
+        if(debug) {
+            cout << "[CBJ] Dominio vacio, retornando a variable x_" << Respuesta[1] << endl;
+
+        }
         return Respuesta[1];
     }
     int Solucion_nueva_copia[P];
@@ -299,8 +305,9 @@ int main(int argc, char *argv[]) {
     sigemptyset(&sigIntHandler.sa_mask);
     sigIntHandler.sa_flags = 0;
     sigaction(SIGINT, &sigIntHandler, NULL);
-    semilla = atoi(argv[2]);
-    debug = atoi(argv[3]);
+    semilla = atoi(argv[3]);
+    debug = atoi(argv[4]);
+    quiere_random = atoi(argv[2]);
 
     // Lectura de instancia
     string FileName(argv[1]);
@@ -399,6 +406,8 @@ int main(int argc, char *argv[]) {
         contador_matrizcolumna = 0;
     }
 
+    
+
     file_instancia.close();
 
     int Solucion[P];
@@ -415,6 +424,18 @@ int main(int argc, char *argv[]) {
     Solucion_best.Cant_Retornos = 0;
     
     vector<Avion> Aviones_copia = deepCopydeAviones(Aviones, P);
+
+    swap(Aviones_copia[P-1], Aviones_copia[0]);
+    vector<Avion>::iterator av_it;
+    int contador_av_it = 0;
+    cout << "Orden de instanciación de variables: " << endl;
+    for(av_it = Aviones_copia.begin(); av_it != Aviones_copia.end(); ++av_it) {
+
+        av_it->indice = contador_av_it++;
+        cout << "x_" << av_it->nro_avion << " ";
+    }
+    cout << endl;
+
     list<int>::iterator valor;
     Solucion_current.start = clock();
     for(valor = Aviones_copia[0].dominio.begin(); valor != Aviones_copia[0].dominio.end(); ++valor) {
