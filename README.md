@@ -38,6 +38,8 @@ Con
 
 directorio_instancia: Directorio de la instancia.
 
+random = 2 Si se quiere instanciación en el orden ascendente que viene en la instancia.
+
 random = 1 Si se quiere instanciación de variables y valores aleatorios.
 
 random = 0 Si se quiere instanciación de variables con mayores penalizaciones (g y h) primero y con sus mejores valores (más cercanos a T) primero.
