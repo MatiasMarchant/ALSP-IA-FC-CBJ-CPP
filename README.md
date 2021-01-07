@@ -48,7 +48,7 @@ semilla: Semilla utilizada si random = 1
 
 debug = 1 Si se desea mostrar por terminal qué variables se instancian, qué valores se filtran y qué soluciones se encuentran en el instante.
 
-debug = 1 Si no se desea lo anterior.
+debug = 0 Si no se desea lo anterior.
 
 ## Para limpiar
 ```
