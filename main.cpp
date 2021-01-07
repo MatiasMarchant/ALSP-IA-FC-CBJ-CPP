@@ -316,7 +316,8 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
     return -2;
 }
 
-// main 
+// main es la función que lee la instancia y guarda los aviones dependiendo de la variable quiere_random
+// entregada por terminal. Llama a ALSP_v2.
 int main(int argc, char *argv[]) {
     // Handler ctrl + C
     struct sigaction sigIntHandler;
@@ -358,6 +359,7 @@ int main(int argc, char *argv[]) {
     // y después manipularlo ya sea con shuffle para random
     // o con sort para quiere_random = 0
 
+    // Lectura instancia
     for (int i = 0; i < P; i++) {
         getline(file_instancia, line);
         vector <float> arreglo_aux;
@@ -438,6 +440,7 @@ int main(int argc, char *argv[]) {
         
         contador_aviones += 1;
 
+        // Matriz_Distancias S
         getline(file_instancia, line);
         pos = line.find(delimeter);
         token = line.substr(0, pos);
@@ -477,22 +480,14 @@ int main(int argc, char *argv[]) {
         shuffle(Aviones_copia.begin(), Aviones_copia.end(), default_random_engine(semilla));
     }
     if(quiere_random == 0) {
-        // Swaps entre Aviones_copia
-        // map<int, int> indiceyg;
-        // int indice;
-        // Iterar sobre Aviones_copia, swappear cuando se encuentre un aumento en g_i o h_i
-        // vector<Avion>::iterator Avion_it;
-        // for(Avion_it = Aviones_copia.begin(); Avion_it != Aviones_copia.end(); ++Avion_it) {
-        //     indiceyg[indice++] = Avion_it->g;
-        // }
-        // Sortear indiceyg
-
+        // Sorteo ascendente de la penalización g de los aviones.
         sort(Aviones_copia.begin(), Aviones_copia.end(),
         [](const Avion& lhs, const Avion& rhs) {
             return lhs.g > rhs.g;
         });
     }
 
+    // Arreglar índices por tanto shuffle de aviones.
     vector<Avion>::iterator av_it;
     int contador_av_it = 0;
     cout << "Orden de instanciación de variables: " << endl;
