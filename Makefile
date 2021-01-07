@@ -8,7 +8,7 @@ instancias = InstanciasALSP/Txt/
 #semilla
 semilla = 439923
 debug = 1
-random = 0
+random = 1
 
 comp:$(prog)
 

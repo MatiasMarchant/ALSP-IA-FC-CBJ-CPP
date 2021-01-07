@@ -338,12 +338,19 @@ int main(int argc, char *argv[]) {
     int contador_aviones = 0;
     int contador_indice_aviones = 0;
     int contador_indice = P - 1;
-    vector<int> indices_shuffleados_para_contador_aviones;
-    for(int q = 0; q < P; q++) {
-        indices_shuffleados_para_contador_aviones.push_back(q);
-    }
-    shuffle(indices_shuffleados_para_contador_aviones.begin(), indices_shuffleados_para_contador_aviones.end(), default_random_engine(semilla));
     int contador_matrizfila = 0;
+
+    // Nuevo approach: tener vector Aviones ordenado por como venía en el .txt
+    // y después manipularlo ya sea con shuffle para random
+    // o con swaps para quiere_random = 0
+
+
+    // vector<int> indices_shuffleados_para_contador_aviones;
+    // for(int q = 0; q < P; q++) {
+    //     indices_shuffleados_para_contador_aviones.push_back(q);
+    // }
+    // shuffle(indices_shuffleados_para_contador_aviones.begin(), indices_shuffleados_para_contador_aviones.end(), default_random_engine(semilla));
+
     for (int i = 0; i < P; i++) {
         getline(file_instancia, line);
         vector <float> arreglo_aux;
@@ -362,9 +369,11 @@ int main(int argc, char *argv[]) {
             contador += 1;
         }
 
-        contador_aviones = indices_shuffleados_para_contador_aviones[contador_indice];
-        indices_shuffleados_para_contador_aviones.pop_back();
-        contador_indice -= 1;
+        // contador_aviones = indices_shuffleados_para_contador_aviones[contador_indice];
+        // indices_shuffleados_para_contador_aviones.pop_back();
+        // contador_indice -= 1;
+        contador_aviones = contador_indice_aviones;
+        
         Aviones[contador_aviones].E = static_cast<int>(arreglo_aux[0]);
         Aviones[contador_aviones].T = static_cast<int>(arreglo_aux[1]);
         Aviones[contador_aviones].L = static_cast<int>(arreglo_aux[2]);
@@ -374,14 +383,19 @@ int main(int argc, char *argv[]) {
         Aviones[contador_aviones].nro_avion = contador_indice_aviones;
         
 
-        vector<int> vector_aux_para_shuffle;
-        for(int k = Aviones[contador_aviones].E; k <= Aviones[contador_aviones].L; k++) {
-            vector_aux_para_shuffle.push_back(k);
-        }
-        shuffle(vector_aux_para_shuffle.begin(), vector_aux_para_shuffle.end(), default_random_engine(semilla));
-        vector<int>::iterator vector_aux_iterator;
-        for(vector_aux_iterator = vector_aux_para_shuffle.begin(); vector_aux_iterator != vector_aux_para_shuffle.end(); ++vector_aux_iterator) {
-            Aviones[contador_aviones].dominio.push_back(*vector_aux_iterator);
+        // vector<int> vector_aux_para_shuffle;
+        // for(int k = Aviones[contador_aviones].E; k <= Aviones[contador_aviones].L; k++) {
+        //     vector_aux_para_shuffle.push_back(k);
+        // }
+        // shuffle(vector_aux_para_shuffle.begin(), vector_aux_para_shuffle.end(), default_random_engine(semilla));
+        // vector<int>::iterator vector_aux_iterator;
+        // for(vector_aux_iterator = vector_aux_para_shuffle.begin(); vector_aux_iterator != vector_aux_para_shuffle.end(); ++vector_aux_iterator) {
+        //     Aviones[contador_aviones].dominio.push_back(*vector_aux_iterator);
+        // }
+
+        // Esta parte es manipulable para cuando quiere_random = 0
+        for(int j = Aviones[contador_aviones].E; j <= Aviones[contador_aviones].L; j++) {
+            Aviones[contador_aviones].dominio.push_back(j);
         }
         
         for(int l = 0; l < P; l++) {
@@ -406,8 +420,6 @@ int main(int argc, char *argv[]) {
         contador_matrizcolumna = 0;
     }
 
-    
-
     file_instancia.close();
 
     int Solucion[P];
@@ -425,12 +437,20 @@ int main(int argc, char *argv[]) {
     
     vector<Avion> Aviones_copia = deepCopydeAviones(Aviones, P);
 
-    swap(Aviones_copia[P-1], Aviones_copia[0]);
+    if(quiere_random == 1) {
+        // Para hacer random (con shuffle deberia bastar, pero cache muy despues)
+        shuffle(Aviones_copia.begin(), Aviones_copia.end(), default_random_engine(semilla));
+        
+    }
+    if(quiere_random == 0) {
+
+    }
+
+    // swap(Aviones_copia[P-1], Aviones_copia[0]);
     vector<Avion>::iterator av_it;
     int contador_av_it = 0;
     cout << "Orden de instanciación de variables: " << endl;
     for(av_it = Aviones_copia.begin(); av_it != Aviones_copia.end(); ++av_it) {
-
         av_it->indice = contador_av_it++;
         cout << "x_" << av_it->nro_avion << " ";
     }
