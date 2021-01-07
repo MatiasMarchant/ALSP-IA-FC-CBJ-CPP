@@ -1,19 +1,6 @@
 // Forward Checking + CBJ
 // Matías Marchant 201673556-9
 
-// PARA CRUZAR MATRIZ
-// cout << endl;
-// for(int i = 0; i < sizeof(MATRIZ_DISTANCIAS[0])/sizeof(*MATRIZ_DISTANCIAS[0]); i++) {
-//     cout << "i: " << i << " " << MATRIZ_DISTANCIAS[1][i] << endl;
-// }
-// cout << endl;
-
-// PARA ITERAR LISTA DE ENTEROS
-// list<int>::iterator it;
-// for(it = Aviones[0].dominio.begin(); it != Aviones[0].dominio.end(); ++it) {
-//     cout << (*it) << endl;
-// }
-
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -171,7 +158,8 @@ vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Av
             for(x_j = avion_no_instanciado->dominio.begin(); x_j != avion_no_instanciado->dominio.end(); ++x_j) {
                 // ACA SE CUENTAN LOS CHEQUEOS
                 Solucion_current.Cant_Chequeos += 1;
-                if(*x_j < x_i + MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion] && *x_j > x_i - MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion]) {
+                if(*x_j < x_i + MATRIZ_DISTANCIAS[nro_avion][avion_no_instanciado->nro_avion] && x_i < *x_j + MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion]) {
+                //if(*x_j < x_i + MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion] && *x_j > x_i - MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion]) {
                     // Significa que debo borrar x_j de avion_no_instanciado->dominio
                     if(debug) {
                         cout << "[FC] x_" << avion_no_instanciado->nro_avion << " = " << *x_j << " eliminado por x_" << nro_avion << " = " << x_i << endl;
