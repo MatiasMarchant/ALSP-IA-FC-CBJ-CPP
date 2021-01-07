@@ -12,7 +12,12 @@
 #include <algorithm>
 using namespace std;
 
-// Clases
+/*=============== Clases ===============*/
+
+// La clase Avión tiene las características de cada avión (E, T, L, g, h),
+// el índice que representa el orden de instanciación de ese avión
+// su dominio en una lista de enteros, su conjunto de conflictos como vector
+// y el número del avión en nro_avion
 class Avion {
     public:
         int E;
@@ -26,6 +31,9 @@ class Avion {
         int nro_avion;
 };
 
+// La clase Solución sirve para guardar lo necesario a la hora de guardar y
+// escribirla en .txt ó por terminal. En esta implementación sólo se usa
+// para guardar Solucion_current y Solucion_best.
 class Solucion {
     public:
         map<int, int> AvioneseInstante;
@@ -38,14 +46,21 @@ class Solucion {
         clock_t end;
 };
 
+/*=============== Variables globales ===============*/
+
 Solucion Solucion_current;
 Solucion Solucion_best;
 int semilla;
 int debug;
 int quiere_random;
 
+/*=============== Funciones ===============*/
+
+// my_handler es la función que se encarga de imprimir por pantalla
+// y escribir en el archivo de texto "out.txt" cuando se corta la ejecución
+// del programa con ctrl + C
 void my_handler(int s) {
-    if(Solucion_best.Cant_Instanciaciones == 0) {
+    if(Solucion_best.Cant_Instanciaciones == 0) { // Si aun no encuentra una solución.
         // Printear solucion_current
         cout << endl << "Cantidad instanciaciones: " << Solucion_current.Cant_Instanciaciones << endl;
         cout << "Cantidad de chequeos: " << Solucion_current.Cant_Chequeos << endl;
@@ -74,7 +89,7 @@ void my_handler(int s) {
         exit(1);
     }
     else {
-        // Printear solucion_best
+        // Printear solucion_best porque si encontró almenos una solución.
         cout << endl << "Cantidad instanciaciones: " << Solucion_best.Cant_Instanciaciones << endl;
         cout << "Cantidad de chequeos: " << Solucion_best.Cant_Chequeos << endl;
         cout << "Cantidad de retornos: " << Solucion_best.Cant_Retornos << endl;
@@ -104,6 +119,9 @@ void my_handler(int s) {
     
 }
 
+// deepCopydeAviones recibe como parámetro un vector de objetos de la clase Avión
+// y P como la cantidad de aviones. Itera sobre el vector para realizar una copia
+// del mismo y retornarla.
 std::vector<Avion> deepCopydeAviones(vector<Avion> Aviones, int P) {
     vector<Avion> Aviones_copia(P, Avion());
     vector<Avion>::iterator it;
@@ -130,7 +148,9 @@ std::vector<Avion> deepCopydeAviones(vector<Avion> Aviones, int P) {
 }
 
 
-
+// agregarindiceaconflictos recibe como parámetros un conjunto de conflictos, el índice a agregar
+// y P como la cantidad de aviones. Agrega la variable Indice al conjunto de conflictos
+// si esque no pertenecía anteriormente.
 vector<int> agregarindiceaconflictos(vector<int> conjuntoconflicto, int Indice, int P) {
     for(int i = 0; i < P; i++) {
         if(conjuntoconflicto[i] == -1) { // Si ya llego al final
@@ -144,6 +164,13 @@ vector<int> agregarindiceaconflictos(vector<int> conjuntoconflicto, int Indice, 
     return conjuntoconflicto;
 }
 
+// Filtrar_espacio_busqueda es la función principal del Forward Checking
+// recibe como parámetros la Matriz de distancias S, los Aviones, el Indice de
+// la variable siendo instanciada, el valor instanciado, la cantidad de aviones P
+// y el numero del avión para luego buscar en la matriz S.
+// Lo que hace es iterar sobre los dominios de los aviones no instanciados y elimina valores
+// incompatibles con el valor instanciado, cuando elimina, se agrega la variable siendo instanciada
+// al conjunto de conflictos de la variable con dominio eliminado.
 vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, int Valor, int P, int nro_avion) {
     int x_i = Valor;
     if(debug) {
@@ -152,14 +179,13 @@ vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Av
     vector<Avion> Aviones_nueva_copia = deepCopydeAviones(Aviones_copia, P);
     vector<Avion>::iterator avion_no_instanciado;
     for(avion_no_instanciado = Aviones_copia.begin(); avion_no_instanciado != Aviones_copia.end(); ++avion_no_instanciado) {
-        if(avion_no_instanciado->indice >= Indice + 1) {
+        if(avion_no_instanciado->indice >= Indice + 1) { // Para aviones no instanciados
             list<int> copia_dominio(avion_no_instanciado->dominio);
             list<int>::iterator x_j;
             for(x_j = avion_no_instanciado->dominio.begin(); x_j != avion_no_instanciado->dominio.end(); ++x_j) {
-                // ACA SE CUENTAN LOS CHEQUEOS
+                // Contar para cantidad de chequeos
                 Solucion_current.Cant_Chequeos += 1;
                 if(*x_j < x_i + MATRIZ_DISTANCIAS[nro_avion][avion_no_instanciado->nro_avion] && x_i < *x_j + MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion]) {
-                //if(*x_j < x_i + MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion] && *x_j > x_i - MATRIZ_DISTANCIAS[avion_no_instanciado->nro_avion][nro_avion]) {
                     // Significa que debo borrar x_j de avion_no_instanciado->dominio
                     if(debug) {
                         cout << "[FC] x_" << avion_no_instanciado->nro_avion << " = " << *x_j << " eliminado por x_" << nro_avion << " = " << x_i << endl;
@@ -172,23 +198,12 @@ vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Av
             avion_no_instanciado->dominio = copia_dominio;
         }
     }
-    // Para printear en caso de debugear
-    // for(avion_no_instanciado = Aviones_copia.begin(); avion_no_instanciado != Aviones_copia.end(); ++avion_no_instanciado) {
-    //     // list<int>::iterator x_j;
-    //     vector<int>::iterator x_j;
-    //     cout << "indice: " << avion_no_instanciado->indice << endl;
-    //     cout << "conjunto conflicto: " << endl;
-    //     for(x_j = avion_no_instanciado->conjuntoconflicto.begin(); x_j != avion_no_instanciado->conjuntoconflicto.end(); ++x_j) {
-    //         cout << *x_j;
-    //     }
-    //     cout << endl;
-
-    // }
     return Aviones_copia;
 }
 
-
-
+// escogerIndiceSaltoInteligente recibe como parámetro un conjunto de conflictos
+// y retorna el número mas alto, que representa a la variable con índice más alto
+// dentro del conjunto de conflictos, o sea la variable más recientemente instanciada.
 int escogerIndiceSaltoInteligente(vector<int> conjuntoconflicto) {
     int mayor = -9999;
     vector<int>::iterator iterador;
@@ -200,6 +215,11 @@ int escogerIndiceSaltoInteligente(vector<int> conjuntoconflicto) {
     return mayor;
 }
 
+// HayAlgunDominioVacio recibe como parámetro el vector de Aviones y revisa
+// si esque alguno tiene el dominio vacío, si ocurre lo anterior, retorna un vector
+// de enteros de tamaño dos, con el primer valor siendo 1 (si hay dominio vacío)
+// y el segundo valor siendo el índice del avión al que se debe saltar según su
+// conjunto de conflictos (CBJ)
 vector<int> HayAlgunDominioVacio(vector<Avion> Aviones_nueva_copia) {
     vector<Avion>::iterator avion;
     vector<int> Respuesta;
@@ -214,15 +234,24 @@ vector<int> HayAlgunDominioVacio(vector<Avion> Aviones_nueva_copia) {
     return Respuesta;
 }
 
+// ALSP_v2 es la función principal, recibe como parámetros la Matriz de distancias S, el vector
+// de aviones, el Indice que representa el orden de instanciación de la variable, el valor siendo instanciado,
+// un arreglo donde se va armando la solución, la cantidad de aviones P y el número del avión nro_avion.
+// Se llama recursivamente y lo que hace es: ingresar el valor instanciado a la Solución y si 
+// se han instanciado P variables, entonces se tiene una solución factible.
+// En caso de que aún falten variables por instanciarse, se filtra el dominio de las variables faltantes
+// y en caso de que haya algún dominio vacío, se retorna el entero que representa la variable a la que se debe saltar usando CBJ. 
+// En caso de que se haya encontrado una solución factible entonces esa rama está libre de saltos inteligentes, en la función se puede ver porque se retorna -2.
 int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, int Valor, int* Solucion, int P, int nro_avion) {
     // Retorna: estado
     // Si estado == -2, significa que se encontró una solución y la rama está libre de saltos inteligentes (CBJ)
     // En caso que no esté libre de saltos inteligentes, estado tomará el valor del índice del avión
     // al cual se debe saltar, basándose en el conjunto de conflicto de la variable con dominio vacío
     Solucion[Indice] = Valor;
+    // Contar instanciaciones
     Solucion_current.AvioneseInstante[nro_avion] = Valor;
     Solucion_current.Cant_Instanciaciones += 1;
-    // ACA SE CUENTAN LAS INSTANCIACIONES
+    
     if(Indice >= P -1) {
         // Print solucion
         Solucion_current.end = clock();
@@ -259,7 +288,7 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
     Aviones_nueva_copia = Filtrar_espacio_busqueda(MATRIZ_DISTANCIAS, Aviones_copia, Indice, Valor, P, nro_avion);
     vector<int> Respuesta = HayAlgunDominioVacio(Aviones_nueva_copia);
     if(Respuesta[0] == 1) {
-        // ACA SE PUEDEN CONTAR RETORNOS
+        // Contar retornos
         Solucion_current.Cant_Retornos += 1;
         if(debug) {
             cout << "[CBJ] Dominio vacio, retornando a variable x_" << Respuesta[1] << endl;
@@ -277,30 +306,31 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
         int estado = ALSP_v2(MATRIZ_DISTANCIAS, Aviones_nueva_copia, Indice + 1, *valor_siguiente_dominio, Solucion_nueva_copia, P, Aviones_nueva_copia[Indice + 1].nro_avion);
         if(estado != -2 && estado != Indice + 1) {
             // Si estado es diferente de -2 (no + CBJ) y no es Indice + 1, return estado
-            // ACA SE PUEDEN CONTAR RETORNOS
+            // Contar retornos
             Solucion_current.Cant_Retornos += 1;
             return estado;
         }
     }
-    // ACA SE PUEDEN CONTAR RETORNOS
+    // Contar retornos
     Solucion_current.Cant_Retornos += 1;
     return -2;
 }
 
+// main 
 int main(int argc, char *argv[]) {
+    // Handler ctrl + C
     struct sigaction sigIntHandler;
     sigIntHandler.sa_handler = my_handler;
     sigemptyset(&sigIntHandler.sa_mask);
     sigIntHandler.sa_flags = 0;
     sigaction(SIGINT, &sigIntHandler, NULL);
+    // Variables globales por terminal
     semilla = atoi(argv[3]);
     debug = atoi(argv[4]);
     quiere_random = atoi(argv[2]);
-
     // Lectura de instancia
     string FileName(argv[1]);
     ifstream file_instancia(FileName);
-
     string line;
     string delimeter = " ";
     size_t pos = 0;
@@ -317,19 +347,16 @@ int main(int argc, char *argv[]) {
     for(int i = 0; i < P; i++) {
         MATRIZ_DISTANCIAS[i] = new int[P];
     }
-    
 
     // Vector de aviones
     vector <Avion> Aviones(P, Avion());
     
-    
     int contador_aviones = 0;
-    int contador_indice = P - 1;
     int contador_matrizfila = 0;
 
-    // Nuevo approach: tener vector Aviones ordenado por como venía en el .txt
+    // Alcance: tener vector Aviones ordenado por como venía en el .txt
     // y después manipularlo ya sea con shuffle para random
-    // o con swaps para quiere_random = 0
+    // o con sort para quiere_random = 0
 
     for (int i = 0; i < P; i++) {
         getline(file_instancia, line);
