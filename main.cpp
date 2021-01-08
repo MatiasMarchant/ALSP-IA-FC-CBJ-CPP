@@ -192,6 +192,9 @@ vector<Avion> Filtrar_espacio_busqueda(int** MATRIZ_DISTANCIAS, vector<Avion> Av
                     }
                     copia_dominio.remove(*x_j);
                     // Agregar Indice a avion_no_instanciado->conjuntoconflictos
+                    // if(debug) {
+                    //     cout << "[CBJ] Agregando x_" << nro_avion << " al conjunto de conflictos de x_" << avion_no_instanciado->nro_avion << endl;
+                    // }
                     avion_no_instanciado->conjuntoconflicto = agregarindiceaconflictos(avion_no_instanciado->conjuntoconflicto, Indice, P);
                 }
             }
@@ -208,6 +211,9 @@ int escogerIndiceSaltoInteligente(vector<int> conjuntoconflicto) {
     int mayor = -9999;
     vector<int>::iterator iterador;
     for(iterador = conjuntoconflicto.begin(); iterador != conjuntoconflicto.end(); ++iterador) {
+        // if(debug) {
+        //     cout << "[CBJ] conjunto conflicto: " << *iterador << endl;
+        // }
         if(*iterador > mayor) {
             mayor = *iterador;
         }
@@ -291,7 +297,7 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
         // Contar retornos
         Solucion_current.Cant_Retornos += 1;
         if(debug) {
-            cout << "[CBJ] Dominio vacio, retornando a variable x_" << Respuesta[1] << endl;
+            cout << "[CBJ] Dominio vacio, retornando a variable instanciada en orden " << Respuesta[1] << endl;
 
         }
         return Respuesta[1];
@@ -304,7 +310,7 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
     list<int>::iterator valor_siguiente_dominio;
     for(valor_siguiente_dominio = Aviones_nueva_copia[Indice + 1].dominio.begin(); valor_siguiente_dominio != Aviones_nueva_copia[Indice + 1].dominio.end(); ++valor_siguiente_dominio) {
         int estado = ALSP_v2(MATRIZ_DISTANCIAS, Aviones_nueva_copia, Indice + 1, *valor_siguiente_dominio, Solucion_nueva_copia, P, Aviones_nueva_copia[Indice + 1].nro_avion);
-        if(estado != -2 && estado != Indice + 1) {
+        if(estado != -2 && estado != Indice + 1) { // ALSP_v2 retorna -2 si no deben haber mas saltos inteligentes y retorna el indice de la variable a la que se quiere saltar
             // Si estado es diferente de -2 (no + CBJ) y no es Indice + 1, return estado
             // Contar retornos
             Solucion_current.Cant_Retornos += 1;
@@ -419,20 +425,25 @@ int main(int argc, char *argv[]) {
                 Aviones[contador_aviones].dominio.push_back(descendente--);
             }
             // Recordar agregar el .L o .E porque la restriccion de arriba es mayor/menor estricto
-            if(ascendente == Aviones[contador_aviones].L) { // ascendente llego al limite
-                Aviones[contador_aviones].dominio.push_back(ascendente);
-                while(descendente >= Aviones[contador_aviones].E) {
-                    Aviones[contador_aviones].dominio.push_back(descendente--);
+            if(Aviones[contador_aviones].T == Aviones[contador_aviones].E && Aviones[contador_aviones].T == Aviones[contador_aviones].L) {
+                
+            }
+            else {
+                if(ascendente >= Aviones[contador_aviones].L) { // ascendente llego al limite
+                    Aviones[contador_aviones].dominio.push_back(ascendente);
+                    while(descendente >= Aviones[contador_aviones].E) {
+                        Aviones[contador_aviones].dominio.push_back(descendente--);
+                    }
+                }
+                if(descendente <= Aviones[contador_aviones].E) { // descendente llego al limite
+                    Aviones[contador_aviones].dominio.push_back(descendente);
+                    while(ascendente <= Aviones[contador_aviones].L) {
+                        Aviones[contador_aviones].dominio.push_back(ascendente++);
+                    }
                 }
             }
-            if(descendente == Aviones[contador_aviones].E) { // descendente llego al limite
-                Aviones[contador_aviones].dominio.push_back(descendente);
-                while(ascendente <= Aviones[contador_aviones].L) {
-                    Aviones[contador_aviones].dominio.push_back(ascendente++);
-                }
-            }
+            
         }
-        
         
         for(int l = 0; l < P; l++) {
             Aviones[contador_aviones].conjuntoconflicto.push_back(-1); // -1 significa no conflictos (por ahora)
