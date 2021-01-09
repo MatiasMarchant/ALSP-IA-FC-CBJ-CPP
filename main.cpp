@@ -53,6 +53,7 @@ Solucion Solucion_best;
 int semilla;
 int debug;
 int quiere_random;
+int salto_inteligente;
 
 /*=============== Funciones ===============*/
 
@@ -231,8 +232,13 @@ vector<int> HayAlgunDominioVacio(vector<Avion> Aviones_nueva_copia) {
     vector<int> Respuesta;
     for(avion = Aviones_nueva_copia.begin(); avion != Aviones_nueva_copia.end(); ++avion) {
         if(avion->dominio.empty()) { // Si esta vacio, retornar [1, escogerIndiceSaltoInteligente]
+            if(salto_inteligente == 1) { // Si la variable global salto_inteligente está activa, entonces permite saltos inteligentes
+                Respuesta.push_back(1);
+                Respuesta.push_back(escogerIndiceSaltoInteligente(avion->conjuntoconflicto));
+            }
+            // Si la variable global salto_inteligente == 0 no está activa y no permite saltos inteligentes
             Respuesta.push_back(1);
-            Respuesta.push_back(escogerIndiceSaltoInteligente(avion->conjuntoconflicto));
+            Respuesta.push_back(-2);
             return Respuesta;
         }
     }
@@ -287,6 +293,7 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
         // ACA SE PUEDEN CONTAR RETORNOS
         Solucion_current.Cant_Retornos += 1;
         // cout << "[CBJ] Ya encontre solucion en esta rama, no hay salto inteligente" << endl;
+        salto_inteligente = 0;
         return -2;
     }
 
@@ -512,6 +519,7 @@ int main(int argc, char *argv[]) {
     list<int>::iterator valor;
     Solucion_current.start = clock();
     for(valor = Aviones_copia[0].dominio.begin(); valor != Aviones_copia[0].dominio.end(); ++valor) {
+        salto_inteligente = 1;
         ALSP_v2(MATRIZ_DISTANCIAS, Aviones_copia, 0, *valor, Solucion, P, Aviones_copia[0].nro_avion);
     }
     
