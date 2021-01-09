@@ -231,8 +231,14 @@ vector<int> HayAlgunDominioVacio(vector<Avion> Aviones_nueva_copia) {
     vector<int> Respuesta;
     for(avion = Aviones_nueva_copia.begin(); avion != Aviones_nueva_copia.end(); ++avion) {
         if(avion->dominio.empty()) { // Si esta vacio, retornar [1, escogerIndiceSaltoInteligente]
+            if(Solucion_best.Costo != 99999) { // Si aun no se encuentra una solucion
+                Respuesta.push_back(1);
+                Respuesta.push_back(escogerIndiceSaltoInteligente(avion->conjuntoconflicto));
+                return Respuesta;
+            }
+            // Si se encontro ya una solucion, entonces retornar -2
             Respuesta.push_back(1);
-            Respuesta.push_back(escogerIndiceSaltoInteligente(avion->conjuntoconflicto));
+            Respuesta.push_back(-2);
             return Respuesta;
         }
     }
@@ -312,6 +318,7 @@ int ALSP_v2(int** MATRIZ_DISTANCIAS, vector<Avion> Aviones_copia, int Indice, in
         int estado = ALSP_v2(MATRIZ_DISTANCIAS, Aviones_nueva_copia, Indice + 1, *valor_siguiente_dominio, Solucion_nueva_copia, P, Aviones_nueva_copia[Indice + 1].nro_avion);
         if(estado != -2 && estado != Indice + 1) { // ALSP_v2 retorna -2 si no deben haber mas saltos inteligentes y retorna el indice de la variable a la que se quiere saltar
             // Si estado es diferente de -2 (no + CBJ) y no es Indice + 1, return estado
+            // Si es == -2, no entra porque ya se encontró una solución entonces se sigue nomas, no hay retorno inteligente
             // Contar retornos
             Solucion_current.Cant_Retornos += 1;
             return estado;
