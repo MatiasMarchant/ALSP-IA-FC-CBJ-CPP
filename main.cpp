@@ -231,14 +231,8 @@ vector<int> HayAlgunDominioVacio(vector<Avion> Aviones_nueva_copia) {
     vector<int> Respuesta;
     for(avion = Aviones_nueva_copia.begin(); avion != Aviones_nueva_copia.end(); ++avion) {
         if(avion->dominio.empty()) { // Si esta vacio, retornar [1, escogerIndiceSaltoInteligente]
-            if(Solucion_best.Costo != 99999) { // Si aun no se encuentra una solucion
-                Respuesta.push_back(1);
-                Respuesta.push_back(escogerIndiceSaltoInteligente(avion->conjuntoconflicto));
-                return Respuesta;
-            }
-            // Si se encontro ya una solucion, entonces retornar -2
             Respuesta.push_back(1);
-            Respuesta.push_back(-2);
+            Respuesta.push_back(escogerIndiceSaltoInteligente(avion->conjuntoconflicto));
             return Respuesta;
         }
     }
